@@ -5,7 +5,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '5'
 from loss import depth_loss_function
 from utils import predict, save_images, load_test_data
 from model import create_model
-from data import get_nyu_train_test_data, get_unreal_train_test_data
 from data import get_diode_train_test_data
 from callbacks import get_nyu_callbacks
 
@@ -20,8 +19,8 @@ parser.add_argument('--bs', type=int, default=1, help='Batch size')
 parser.add_argument('--epochs', type=int, default=20, help='Number of epochs')
 parser.add_argument('--gpus', type=int, default=1, help='The number of GPUs to use')
 parser.add_argument('--gpuids', type=str, default='0', help='IDs of GPUs to use')
-parser.add_argument('--mindepth', type=float, default=10.0, help='Minimum of input depths')
-parser.add_argument('--maxdepth', type=float, default=1000.0, help='Maximum of input depths')
+parser.add_argument('--mindepth', type=float, default=0.6, help='Minimum of input depths')
+parser.add_argument('--maxdepth', type=float, default=350.0, help='Maximum of input depths')
 parser.add_argument('--name', type=str, default='densedepth_nyu', help='A name to attach to the training session')
 parser.add_argument('--checkpoint', type=str, default='', help='Start training from an existing model.')
 parser.add_argument('--full', dest='full', action='store_true', help='Full training with metrics, checkpoints, and image samples.')
@@ -50,7 +49,7 @@ pathlib.Path(runPath).mkdir(parents=True, exist_ok=True)
 print('Output: ' + runPath)
 
  # (optional steps)
-if True:
+if False:
     # Keep a copy of this training script and calling arguments
     with open(__file__, 'r') as training_script: training_script_content = training_script.read()
     training_script_content = '#' + str(sys.argv) + '\n' + training_script_content
@@ -82,7 +81,12 @@ print('Ready for training!\n')
 callbacks = get_nyu_callbacks(model, basemodel, train_generator, test_generator, load_test_data() if args.full else None , runPath)
 
 # Start training
-model.fit_generator(train_generator, callbacks=callbacks, validation_data=test_generator, epochs=args.epochs, shuffle=True)
+model.fit_generator(
+    train_generator, 
+    callbacks=callbacks, 
+    epochs=args.epochs, 
+    shuffle=True
+)
 
 # Save the final trained model:
-basemodel.save(runPath + '/model.h5')
+basemodel.save_weights(runPath + '/model.h5')
