@@ -20,7 +20,7 @@ class DiodeSequence(Sequence):
 
         self.image_size = [768, 1024, 3]
         self.target_size = [768 // 2, 1024 // 2, 3]
-        self.depth_size = [768 // 4, 1024 // 4, 1]
+        self.depth_mask_size = [768 // 4, 1024 // 4, 2]
 
         self.policy = BasicPolicy(
             color_change_ratio=0.50, mirror_ratio=0.50, 
@@ -55,16 +55,48 @@ class DiodeSequence(Sequence):
 
             sample = self.dataset[index]
 
-            color[i] = resize(np.clip(np.asarray(
-                Image.open(sample[0])
-            ) / 255, 0, 1), self.target_size)
-            depth[i, :, :, :1] = self.minDepth / resize(
-                np.clip(np.load(sample[1]), self.minDepth, self.maxDepth),
-                self.depth_size
+            sample = np.concatenate(
+                (
+                    Image.open(sample[0]), 
+                    np.load(sample[1]), 
+                    np.load(sample[2])[:, :, None]
+                ), -1
             )
-            depth[i, :, :, 1] = np.clip(
-                resize(np.load(sample[2]), self.depth_size[:2]), 
-                0, 1
+
+            # center crop
+            zoom = np.random.uniform(0.5, 1.0)
+            size = [int(768 * zoom), int(1024 * zoom)]
+            start = [768 // 2 - size[0] // 2, 1024 // 2 - size[1] // 2]
+            end = [start[i] + size[i] for i in range(2)]
+            sample = sample[start[0]:end[0], start[1]:end[1], :]
+
+            # normalize depth
+            sample[:, :, 3] = self.minDepth / np.clip(
+                sample[:, :, 3], self.minDepth, self.maxDepth
             )
+            sample[:, :, 3] *= sample[:, :, 4]
+
+            # scale
+            color[i] = resize(sample[:, :, :3], self.target_size[:2]) / 255
+            depth[i] = resize(sample[:, :, 3:5], self.depth_mask_size[:2])
+
+            # 80% chance of grayscale
+            if np.random.uniform() < 0.8:
+                color[i] = np.dot(color[i], [0.299, 0.587, 0.144])[:, :, None]
+
+            # bad exposure
+            clip_from = np.random.uniform(0, 0.2)
+            clip_to = np.random.uniform(0.8, 1.0)
+            spread_from = np.random.uniform(0, 0.4)
+            spread_to = np.random.uniform(0.6, 1.0)
+            
+            color[i] = np.clip(
+                (color[i] - clip_from) / (clip_to - clip_from), 0, 1
+            ) * (spread_to - spread_from) + spread_from
+
+
+        # filter out mixtures with invalid samples from resizing
+        #depth[:, :, :, 0] /= np.maximum(depth[:, :, :, 1], 1e-3)
+        depth[:, :, :, 1] = np.where(depth[:, :, :, 1] > 0.99, 1.0, 0.0)
 
         return color, depth

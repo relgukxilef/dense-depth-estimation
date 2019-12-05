@@ -3,7 +3,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '5'
 
 # Kerasa / TensorFlow
 from loss import depth_loss_function
-from utils import predict, save_images, load_test_data
+from utils import predict, save_images, load_test_data, display_images
 from model import create_model
 from data import get_diode_train_test_data
 #from callbacks import get_nyu_callbacks
@@ -11,6 +11,7 @@ from data import get_diode_train_test_data
 from tensorflow.keras.optimizers import Adam
 import tensorflow.keras.backend as k
 
+from matplotlib import pyplot as plt
 import tensorflow as tf
 import numpy as np
 
@@ -43,7 +44,17 @@ else:
 
 # Data loaders
 train_generator, test_generator = get_diode_train_test_data(args.bs)
-#train_generator, test_generator = get_nyu_train_test_data(args.bs)
+
+#example_color, example_depth = train_generator[0]
+#viz = display_images(
+#    0.6 / np.maximum(example_depth[:, :, :, :1], 1e-3) / 350 * 
+#    example_depth[:, :, :, 1:],  
+#    example_color.copy()
+#)
+#plt.figure(figsize=(10,5))
+#plt.imshow(viz)
+#plt.show()
+#exit()
 
 # Create the model
 model = create_model( existing=args.checkpoint )
@@ -91,4 +102,4 @@ model.fit_generator(
 )
 
 # Save the final trained model:
-basemodel.save_weights(runPath + '/model.h5')
+basemodel.save_weights('model.h5')
