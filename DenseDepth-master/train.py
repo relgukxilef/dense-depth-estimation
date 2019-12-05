@@ -5,7 +5,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '5'
 from loss import depth_loss_function
 from utils import predict, save_images, load_test_data
 from model import create_model
-from data import get_diode_train_test_data
+from data import get_diode_data_filenames
 #from callbacks import get_nyu_callbacks
 
 from tensorflow.keras.optimizers import Adam
@@ -42,14 +42,50 @@ else:
     print('Will use ' + str(args.gpus) + ' GPUs.')
 
 # Data loaders
-train_generator, test_generator = get_diode_train_test_data(args.bs)
-#train_generator, test_generator = get_nyu_train_test_data(args.bs)
+dataset = tf.data.Dataset.from_tensor_slices(get_diode_data_filenames())
+
+def load_npy(filename):
+    return np.load(filename)
+
+def load_sample(filenames):
+    color = tf.ensure_shape(tf.cast(
+        tf.image.decode_png(tf.read_file(filenames[0]), 3), tf.float32
+    ) / 255, [768, 1024, 3])
+    depth = tf.ensure_shape(
+        tf.numpy_function(load_npy, [filenames[1]], [tf.float32])[0], 
+        [768, 1024, 1]
+    )
+    mask = tf.ensure_shape(
+        tf.numpy_function(load_npy, [filenames[2]], [tf.float32])[0],
+        [768, 1024]
+    )
+
+    mask = tf.expand_dims(mask, -1)
+
+    sample = tf.concat([color, depth, mask], -1)
+    tf.image.central_crop(sample, np.random.uniform(0.5, 1.0))
+    tf.image.resize(sample, [768 // 2, 1024 // 2])
+    
+    color, depth_mask = tf.split(sample, [3, 2], -1)
+
+    depth_mask = tf.image.resize(depth_mask, [768 // 4, 1024 // 4])
+
+    depth, mask = tf.split(depth_mask, [1, 1], -1)
+
+    depth /= tf.clip_by_value(mask, 1e-2, 1)
+    depth = tf.clip_by_value(depth, 0.6, 350)
+
+    depth_mask = tf.concat([depth, mask], -1)
+
+    return color, depth_mask
+
+dataset = dataset.map(load_sample, 1).repeat().batch(args.bs)
 
 # Create the model
 model = create_model( existing=args.checkpoint )
 
 # Training session details
-runID = str(int(time.time())) + '-n' + str(len(train_generator)) + '-e' + str(args.epochs) + '-bs' + str(args.bs) + '-lr' + str(args.lr) + '-' + args.name
+runID = str(int(time.time())) + '-e' + str(args.epochs) + '-bs' + str(args.bs) + '-lr' + str(args.lr) + '-' + args.name
 outputPath = './models/'
 runPath = outputPath + runID
 pathlib.Path(runPath).mkdir(parents=True, exist_ok=True)
@@ -67,9 +103,6 @@ if False:
     with open(runPath+'/model_summary.txt', 'w') as f:
         with redirect_stdout(f): model.summary()
 
-# Multi-gpu setup:
-basemodel = model
-
 # Optimizer
 optimizer = Adam(lr=args.lr, amsgrad=True)
 
@@ -84,10 +117,10 @@ print('Ready for training!\n')
 #callbacks = get_nyu_callbacks(model, basemodel, dataset, dataset, load_test_data() if args.full else None , runPath)
 
 # Start training
-model.fit_generator(
-    train_generator, 
-    epochs=args.epochs, 
-    shuffle=True
+model.fit(
+    dataset,
+    epochs=args.epochs,
+    steps_per_epoch=100
 )
 
 # Save the final trained model:

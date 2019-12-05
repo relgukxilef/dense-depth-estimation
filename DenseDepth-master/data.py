@@ -68,3 +68,16 @@ class DiodeSequence(Sequence):
             )
 
         return color, depth
+
+def get_diode_data_filenames():
+    dataset = []
+
+    for root, _, files in os.walk("diode_data"):
+        for file in files:
+            if file.endswith(".png"):
+                image = os.path.join(root, file)
+                depth = image[:-4] + "_depth.npy"
+                mask = image[:-4] + "_depth_mask.npy"
+                dataset += [[image, depth, mask]]
+                
+    return shuffle(dataset, random_state=0)
