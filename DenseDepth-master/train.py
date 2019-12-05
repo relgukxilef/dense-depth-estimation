@@ -9,6 +9,7 @@ from data import get_diode_train_test_data
 #from callbacks import get_nyu_callbacks
 
 from tensorflow.keras.optimizers import Adam
+import tensorflow.keras.backend as k
 
 import tensorflow as tf
 import numpy as np
@@ -27,6 +28,11 @@ parser.add_argument('--checkpoint', type=str, default='', help='Start training f
 parser.add_argument('--full', dest='full', action='store_true', help='Full training with metrics, checkpoints, and image samples.')
 
 args = parser.parse_args()
+
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.9)
+
+session = tf.Session(config = tf.ConfigProto(gpu_options = gpu_options))
+k.set_session(session)
 
 # Inform about multi-gpu training
 if args.gpus == 1: 
