@@ -1,8 +1,8 @@
 import sys
 
-from keras import applications
-from keras.models import Model, load_model
-from keras.layers import Input, InputLayer, Conv2D, Activation, LeakyReLU, Concatenate
+from tensorflow.keras import applications
+from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.layers import Input, InputLayer, Conv2D, Activation, LeakyReLU, Concatenate
 from layers import BilinearUpSampling2D
 from loss import depth_loss_function
 

@@ -1,4 +1,3 @@
-import keras.backend as K
 import tensorflow as tf
 
 def depth_loss_function(y_true, y_pred, theta=0.1, maxDepthVal=1000.0/10.0):
@@ -7,7 +6,7 @@ def depth_loss_function(y_true, y_pred, theta=0.1, maxDepthVal=1000.0/10.0):
     #mask = 1
 
     # Point-wise depth
-    l_depth = K.mean(K.abs(y_pred - depth) * mask)
+    l_depth = tf.reduce_mean(tf.squared_difference(y_pred, depth) * mask)
     return l_depth
 
     # Edges

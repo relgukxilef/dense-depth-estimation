@@ -76,11 +76,11 @@ def get_nyu_callbacks(model, basemodel, train_generator, test_generator, test_se
     callbacks.append( LRTensorBoard(log_dir=runPath) )
 
     # Callback: Learning Rate Scheduler
-    lr_schedule = keras.callbacks.ReduceLROnPlateau(monitor='train_loss', factor=0.7, patience=5, min_lr=0.00009, min_delta=1e-2)
+    lr_schedule = keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.7, patience=5, min_lr=0.00009, min_delta=1e-2)
     callbacks.append( lr_schedule ) # reduce learning rate when stuck
 
     # Callback: save checkpoints
-    callbacks.append(keras.callbacks.ModelCheckpoint(runPath + '/weights.{epoch:02d}-{train_loss:.2f}.hdf5', monitor='train_loss', 
+    callbacks.append(keras.callbacks.ModelCheckpoint(runPath + '/weights.{epoch:02d}-{loss:.2f}.hdf5', monitor='loss', 
         verbose=1, save_best_only=False, save_weights_only=True, mode='min', period=1))
 
     return callbacks

@@ -6,11 +6,12 @@ from loss import depth_loss_function
 from utils import predict, save_images, load_test_data
 from model import create_model
 from data import get_diode_train_test_data
-from callbacks import get_nyu_callbacks
+#from callbacks import get_nyu_callbacks
 
-from keras.optimizers import Adam
-from keras.utils import multi_gpu_model
-from keras.utils.vis_utils import plot_model
+from tensorflow.keras.optimizers import Adam
+
+import tensorflow as tf
+import numpy as np
 
 # Argument Parser
 parser = argparse.ArgumentParser(description='High Quality Monocular Depth Estimation via Transfer Learning')
@@ -21,7 +22,7 @@ parser.add_argument('--gpus', type=int, default=1, help='The number of GPUs to u
 parser.add_argument('--gpuids', type=str, default='0', help='IDs of GPUs to use')
 parser.add_argument('--mindepth', type=float, default=0.6, help='Minimum of input depths')
 parser.add_argument('--maxdepth', type=float, default=350.0, help='Maximum of input depths')
-parser.add_argument('--name', type=str, default='densedepth_nyu', help='A name to attach to the training session')
+parser.add_argument('--name', type=str, default='densedepth_diode', help='A name to attach to the training session')
 parser.add_argument('--checkpoint', type=str, default='', help='Start training from an existing model.')
 parser.add_argument('--full', dest='full', action='store_true', help='Full training with metrics, checkpoints, and image samples.')
 
@@ -55,9 +56,6 @@ if False:
     training_script_content = '#' + str(sys.argv) + '\n' + training_script_content
     with open(runPath+'/'+__file__, 'w') as training_script: training_script.write(training_script_content)
 
-    # Generate model plot
-    plot_model(model, to_file=runPath+'/model_plot.svg', show_shapes=True, show_layer_names=True)
-
     # Save model summary to file
     from contextlib import redirect_stdout
     with open(runPath+'/model_summary.txt', 'w') as f:
@@ -65,7 +63,6 @@ if False:
 
 # Multi-gpu setup:
 basemodel = model
-if args.gpus > 1: model = multi_gpu_model(model, gpus=args.gpus)
 
 # Optimizer
 optimizer = Adam(lr=args.lr, amsgrad=True)
@@ -78,12 +75,11 @@ model.compile(loss=depth_loss_function, optimizer=optimizer)
 print('Ready for training!\n')
 
 # Callbacks
-callbacks = get_nyu_callbacks(model, basemodel, train_generator, test_generator, load_test_data() if args.full else None , runPath)
+#callbacks = get_nyu_callbacks(model, basemodel, dataset, dataset, load_test_data() if args.full else None , runPath)
 
 # Start training
 model.fit_generator(
     train_generator, 
-    callbacks=callbacks, 
     epochs=args.epochs, 
     shuffle=True
 )
