@@ -14,6 +14,7 @@ import tensorflow.keras.backend as k
 from matplotlib import pyplot as plt
 import tensorflow as tf
 import numpy as np
+from PIL import Image
 
 # Argument Parser
 parser = argparse.ArgumentParser(description='High Quality Monocular Depth Estimation via Transfer Learning')
@@ -27,6 +28,7 @@ parser.add_argument('--maxdepth', type=float, default=350.0, help='Maximum of in
 parser.add_argument('--name', type=str, default='densedepth_diode', help='A name to attach to the training session')
 parser.add_argument('--checkpoint', type=str, default='', help='Start training from an existing model.')
 parser.add_argument('--full', dest='full', action='store_true', help='Full training with metrics, checkpoints, and image samples.')
+parser.add_argument('--samples', dest='samples', action='store_true', help='Show example inputs and exit.')
 
 args = parser.parse_args()
 
@@ -45,16 +47,15 @@ else:
 # Data loaders
 train_generator, test_generator = get_diode_train_test_data(args.bs)
 
-#example_color, example_depth = train_generator[0]
-#viz = display_images(
-#    0.6 / np.maximum(example_depth[:, :, :, :1], 1e-3) / 350 * 
-#    example_depth[:, :, :, 1:],  
-#    example_color.copy()
-#)
-#plt.figure(figsize=(10,5))
-#plt.imshow(viz)
-#plt.show()
-#exit()
+if args.samples:
+    example_color, example_depth = train_generator[0]
+    viz = display_images(
+        0.6 / np.maximum(example_depth[:, :, :, :1], 1e-3) / 350 * 
+        example_depth[:, :, :, 1:],  
+        example_color.copy()
+    )
+    Image.fromarray((viz * 255).astype(np.uint8)).save("samples.png")
+    exit()
 
 # Create the model
 model = create_model( existing=args.checkpoint )

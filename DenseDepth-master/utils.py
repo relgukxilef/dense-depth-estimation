@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+from skimage.transform import resize
 
 def predict(model, images, minDepth=10, maxDepth=1000, batch_size=2):
     # Support multiple RGBs, one RGB image, even grayscale 
@@ -25,6 +26,7 @@ def load_images(image_files):
     loaded_images = []
     for file in image_files:
         x = np.clip(np.asarray(Image.open( file ), dtype=float) / 255, 0, 1)
+        x = resize(x, [768 // 2, 1024 // 2])
         loaded_images.append(x)
     return np.stack(loaded_images, axis=0)
 
