@@ -13,7 +13,7 @@ from model import create_model
 
 # Argument Parser
 parser = argparse.ArgumentParser(description='High Quality Monocular Depth Estimation via Transfer Learning')
-parser.add_argument('--model', default='nyu.h5', type=str, help='Trained Keras model file.')
+parser.add_argument('--model', default='model.h5', type=str, help='Trained Keras model file.')
 parser.add_argument('--input', default='examples HELM/*.*', type=str, help='Input filename or folder.')
 args = parser.parse_args()
 
@@ -38,5 +38,5 @@ outputs = predict(model, inputs)
 #matplotlib.use('TkAgg')   
 
 # Display results
-viz = display_images(outputs.copy(), inputs.copy())
+viz = display_images(outputs.copy(), inputs.copy(), is_rescale = False)
 Image.fromarray((viz * 255).astype(np.uint8)).save("test.png")
