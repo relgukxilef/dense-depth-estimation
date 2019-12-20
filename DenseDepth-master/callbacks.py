@@ -5,7 +5,7 @@ from PIL import Image
 
 import keras
 from keras import backend as K
-from utils import predict, evaluate
+from utils import DepthNorm, predict, evaluate
 
 import tensorflow as tf
 
@@ -24,7 +24,7 @@ def get_nyu_callbacks(model, basemodel, train_generator, test_generator, test_se
     # Callback: Tensorboard
     class LRTensorBoard(keras.callbacks.TensorBoard):
         def __init__(self, log_dir):
-            super().__init__(log_dir = log_dir, write_images = True)
+            super().__init__(log_dir=log_dir)
 
             self.num_samples = 6
             self.train_idx = np.random.randint(low=0, high=len(train_generator), size=10)
@@ -37,7 +37,7 @@ def get_nyu_callbacks(model, basemodel, train_generator, test_generator, test_se
                 from skimage.transform import resize
                 plasma = plt.get_cmap('plasma')
 
-                minDepth, maxDepth = 0.6, 350
+                minDepth, maxDepth = 10, 1000
 
                 train_samples = []
                 test_samples = []
@@ -46,8 +46,8 @@ def get_nyu_callbacks(model, basemodel, train_generator, test_generator, test_se
                     x_train, y_train = train_generator.__getitem__(self.train_idx[i], False)
                     x_test, y_test = test_generator[self.test_idx[i]]
 
-                    x_train, y_train = x_train[0], np.clip(minDepth / y_train[0], minDepth, maxDepth) / maxDepth 
-                    x_test, y_test = x_test[0], np.clip(minDepth / y_test[0], minDepth, maxDepth) / maxDepth
+                    x_train, y_train = x_train[0], np.clip(DepthNorm(y_train[0], maxDepth=1000), minDepth, maxDepth) / maxDepth 
+                    x_test, y_test = x_test[0], np.clip(DepthNorm(y_test[0], maxDepth=1000), minDepth, maxDepth) / maxDepth
 
                     h, w = y_train.shape[0], y_train.shape[1]
 

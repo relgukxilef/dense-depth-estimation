@@ -1,4 +1,5 @@
 import numpy as np
+from utils import DepthNorm
 from io import BytesIO
 from PIL import Image
 from zipfile import ZipFile
@@ -19,8 +20,8 @@ class DiodeSequence(Sequence):
         self.dataset = []
 
         self.image_size = [768, 1024, 3]
-        self.target_size = [768 // 2, 1024 // 2, 3]
-        self.depth_mask_size = [768 // 4, 1024 // 4, 2]
+        self.target_size = [480, 640, 3]
+        self.depth_mask_size = [240, 320, 2]
 
         self.policy = BasicPolicy(
             color_change_ratio=0.50, mirror_ratio=0.50, 
@@ -28,7 +29,7 @@ class DiodeSequence(Sequence):
         )
         self.batch_size = batch_size
         self.shape_rgb = [batch_size] + self.target_size
-        self.shape_depth = [batch_size] + [768 // 4, 1024 // 4, 2]
+        self.shape_depth = [batch_size] + [240, 320, 2]
         self.maxDepth = 350.0
         self.minDepth = 0.6
         

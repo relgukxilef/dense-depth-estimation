@@ -2,6 +2,9 @@ import numpy as np
 from PIL import Image
 from skimage.transform import resize
 
+def DepthNorm(x, maxDepth):
+    return maxDepth / x
+
 def predict(model, images, minDepth=10, maxDepth=1000, batch_size=2):
     # Support multiple RGBs, one RGB image, even grayscale 
     if len(images.shape) < 3: images = np.stack((images,images,images), axis=2)
@@ -9,7 +12,7 @@ def predict(model, images, minDepth=10, maxDepth=1000, batch_size=2):
     # Compute predictions
     predictions = model.predict(images, batch_size=batch_size)
     # Put in expected range
-    return np.clip(minDepth / predictions, minDepth, maxDepth) / maxDepth
+    return np.clip(DepthNorm(predictions, maxDepth=maxDepth), minDepth, maxDepth) / maxDepth
 
 def scale_up(scale, images):
     from skimage.transform import resize

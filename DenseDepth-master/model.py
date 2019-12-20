@@ -56,7 +56,7 @@ def create_model(existing='', is_twohundred=False, is_halffeatures=True):
     model = Model(inputs=base_model.input, outputs=conv3)
 
     if existing != '':
-        model.load_weights(existing)
+        model.load_weights(existing, by_name = True)
         print('\nExisting model loaded.\n')
 
     print('Model created.')

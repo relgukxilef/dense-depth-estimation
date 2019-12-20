@@ -5,6 +5,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '5'
 from loss import depth_loss_function
 from utils import predict, save_images, load_test_data, display_images
 from model import create_model
+from data import get_nyu_train_test_data, get_unreal_train_test_data
 from data import get_diode_train_test_data
 #from callbacks import get_nyu_callbacks
 
@@ -58,7 +59,7 @@ if args.samples:
     exit()
 
 # Create the model
-model = create_model( existing=args.checkpoint )
+model = create_model(existing = args.checkpoint, is_twohundred = False)
 
 # Training session details
 runID = str(int(time.time())) + '-n' + str(len(train_generator)) + '-e' + str(args.epochs) + '-bs' + str(args.bs) + '-lr' + str(args.lr) + '-' + args.name
@@ -68,7 +69,7 @@ pathlib.Path(runPath).mkdir(parents=True, exist_ok=True)
 print('Output: ' + runPath)
 
  # (optional steps)
-if False:
+if True:
     # Keep a copy of this training script and calling arguments
     with open(__file__, 'r') as training_script: training_script_content = training_script.read()
     training_script_content = '#' + str(sys.argv) + '\n' + training_script_content
