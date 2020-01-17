@@ -8,13 +8,8 @@ import os
 from sklearn.utils import shuffle
 from skimage.transform import resize
 
-def get_diode_train_test_data(batch_size):
-    # TODO: train and test set shouldn't be the same
-    data = DiodeSequence(batch_size)
-    return data, data
-
 class DiodeSequence(Sequence):
-    def __init__(self, batch_size):
+    def __init__(self, batch_size, test = False):
         self.batch_size = batch_size
         self.dataset = []
 
@@ -31,8 +26,10 @@ class DiodeSequence(Sequence):
         self.shape_depth = [batch_size] + [768 // 4, 1024 // 4, 2]
         self.maxDepth = 350.0
         self.minDepth = 0.6
+
+        path = "diode_test" if test else "diode_data"
         
-        for root, _, files in os.walk("diode_data"):
+        for root, _, files in os.walk(path):
             for file in files:
                 if file.endswith(".png"):
                     image = os.path.join(root, file)
@@ -71,9 +68,9 @@ class DiodeSequence(Sequence):
             sample = sample[start[0]:end[0], start[1]:end[1], :]
 
             # normalize depth
-            sample[:, :, 3] = self.minDepth / np.clip(
+            sample[:, :, 3] = np.clip(
                 sample[:, :, 3], self.minDepth, self.maxDepth
-            )
+            ) / self.maxDepth
             sample[:, :, 3] *= sample[:, :, 4]
 
             # scale

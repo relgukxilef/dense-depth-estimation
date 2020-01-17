@@ -38,5 +38,5 @@ outputs = predict(model, inputs)
 #matplotlib.use('TkAgg')   
 
 # Display results
-viz = display_images(outputs.copy(), inputs.copy(), is_rescale = False)
+viz = display_images(outputs.copy(), inputs.copy())
 Image.fromarray((viz * 255).astype(np.uint8)).save("test.png")
