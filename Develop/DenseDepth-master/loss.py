@@ -21,10 +21,9 @@ def depth_variance(y_true, y_pred):
     return tf.reduce_sum(variance * mask) / tf.reduce_sum(mask)
 
 def error_variance(y_true, y_pred):
-    mask = y_true[:, :, :, 1]
     depth_pred = y_pred[:, :, :, 0]
     depth2_pred = y_pred[:, :, :, 1]
 
     variance_pred = tf.maximum(0.0, depth2_pred - depth_pred * depth_pred)
     
-    return tf.reduce_sum(variance_pred * mask) / tf.reduce_sum(mask)
+    return tf.reduce_mean(variance_pred)

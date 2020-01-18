@@ -5,7 +5,7 @@ import argparse
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '5'
 from model import create_model
 from loss import depth_loss_function, depth_variance, error_variance
-from data import DiodeSequence
+from data import DiodeSequence, HELMSequence
 import tensorflow as tf
 import tensorflow.keras.backend as k
 
@@ -25,10 +25,14 @@ if __name__ == '__main__':
     model = create_model(existing = args.model)
     model.compile(
         loss=depth_loss_function, 
-        metrics=[depth_variance, error_variance]
+        metrics=[
+            #depth_variance, 
+            error_variance
+        ]
     )
 
     test_generator = DiodeSequence(4, True)
+    test_generator = HELMSequence(4)
 
     print(model.evaluate_generator(
         test_generator, workers = 2, use_multiprocessing = True

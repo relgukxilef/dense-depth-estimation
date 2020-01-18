@@ -37,7 +37,6 @@ class DiodeSequence(Sequence):
                     mask = image[:-4] + "_depth_mask.npy"
                     self.dataset += [(image, depth, mask)]
                     
-        self.dataset = shuffle(self.dataset, random_state=0)
         self.size = len(self.dataset)
 
     def __len__(self):
@@ -95,5 +94,44 @@ class DiodeSequence(Sequence):
         # filter out mixtures with invalid samples from resizing
         #depth[:, :, :, 0] /= np.maximum(depth[:, :, :, 1], 1e-3)
         depth[:, :, :, 1] = np.where(depth[:, :, :, 1] > 0.99, 1.0, 0.0)
+
+        return color, depth
+
+class HELMSequence(Sequence):
+    def __init__(self, batch_size):
+        self.batch_size = batch_size
+        self.dataset = []
+
+        self.image_size = [768, 1024, 3]
+        self.target_size = [768 // 2, 1024 // 2, 3]
+        self.depth_mask_size = [768 // 4, 1024 // 4, 2]
+        
+        self.batch_size = batch_size
+        self.shape_rgb = [batch_size] + self.target_size
+        self.shape_depth = [batch_size] + [768 // 4, 1024 // 4, 2]
+
+        path = "helm_test"
+
+        for root, _, files in os.walk(path):
+            for file in files:
+                if file.endswith(".jpg"):
+                    self.dataset += [os.path.join(root, file)]
+        
+        self.size = len(self.dataset)
+
+    def __len__(self):
+        return -(-self.size // self.batch_size) # division rounding up
+
+    def __getitem__(self, idx, is_apply_policy=True):
+        color = np.zeros(self.shape_rgb)
+        depth = np.zeros(self.shape_depth)
+
+        for i in range(self.batch_size):
+            index = min((idx * self.batch_size) + i, self.size - 1)
+
+            sample = np.array(Image.open(self.dataset[index]))
+
+            # scale
+            color[i] = resize(sample, self.target_size[:2]) / 255
 
         return color, depth

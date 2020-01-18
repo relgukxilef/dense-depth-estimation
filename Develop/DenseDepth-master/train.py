@@ -2,7 +2,7 @@ import os, sys, glob, time, pathlib, argparse
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '5'
 
 # Kerasa / TensorFlow
-from loss import depth_loss_function
+from loss import depth_loss_function, depth_variance, error_variance
 from utils import predict, save_images, load_test_data, display_images
 from model import create_model
 from data import DiodeSequence
@@ -19,7 +19,7 @@ from PIL import Image
 if __name__ == '__main__':
     # Argument Parser
     parser = argparse.ArgumentParser(description='High Quality Monocular Depth Estimation via Transfer Learning')
-    parser.add_argument('--lr', type=float, default=0.00001, help='Learning rate')
+    parser.add_argument('--lr', type=float, default=1e-5, help='Learning rate')
     parser.add_argument('--bs', type=int, default=2, help='Batch size')
     parser.add_argument('--epochs', type=int, default=20, help='Number of epochs')
     parser.add_argument('--gpus', type=int, default=1, help='The number of GPUs to use')
@@ -89,7 +89,10 @@ if __name__ == '__main__':
     # Compile the model
     print('\n\n\n', 'Compiling model..', runID, '\n\n\tGPU ' + (str(args.gpus)+' gpus' if args.gpus > 1 else args.gpuids)
             + '\t\tBatch size [ ' + str(args.bs) + ' ] ' + ' \n\n')
-    model.compile(loss=depth_loss_function, optimizer=optimizer)
+    model.compile(
+        loss=depth_loss_function, optimizer=optimizer, 
+        metrics=[depth_variance, error_variance]
+    )
 
     print('Ready for training!\n')
 
