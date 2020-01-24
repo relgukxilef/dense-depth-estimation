@@ -1,20 +1,19 @@
 import sys
 
 from tensorflow.keras import applications
-from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, InputLayer, Conv2D, Activation, LeakyReLU, Concatenate
 from layers import BilinearUpSampling2D
-from loss import depth_loss_function
 
-def create_model(existing='', is_twohundred=False, is_halffeatures=True):
+def create_model(existing=''):
+    """Create Keras model
+    This method is mostly unchanged from the original DenseDepth implementation.
+    """
         
     print('Loading base model (DenseNet)..')
 
     # Encoder Layers
-    if is_twohundred:
-        base_model = applications.DenseNet201(input_shape=(None, None, 3), include_top=False)
-    else:
-        base_model = applications.DenseNet169(input_shape=(None, None, 3), include_top=False)
+    base_model = applications.DenseNet169(input_shape=(None, None, 3), include_top=False)
 
     print('Base model loaded.')
 
@@ -25,10 +24,7 @@ def create_model(existing='', is_twohundred=False, is_halffeatures=True):
     for layer in base_model.layers: layer.trainable = True
 
     # Starting number of decoder filters
-    if is_halffeatures:
-        decode_filters = int(int(base_model_output_shape[-1])/2)
-    else:
-        decode_filters = int(base_model_output_shape[-1])
+    decode_filters = int(int(base_model_output_shape[-1])/2)
 
     # Define upsampling layer
     def upproject(tensor, filters, name, concat_with):

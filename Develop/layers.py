@@ -3,6 +3,10 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 
 class BilinearUpSampling2D(Layer):
+    """Layer to perform bilinear upsampling
+    This class is unchanged from the original DenseDepth implementation.
+    """
+
     def __init__(self, size=[2, 2], data_format=None, **kwargs):
         super(BilinearUpSampling2D, self).__init__(**kwargs)
         self.data_format = data_format

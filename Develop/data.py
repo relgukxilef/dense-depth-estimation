@@ -1,15 +1,18 @@
 import numpy as np
 from io import BytesIO
 from PIL import Image
-from zipfile import ZipFile
 from tensorflow.keras.utils import Sequence
-from augment import BasicPolicy
 import os
 from sklearn.utils import shuffle
 from skimage.transform import resize
 
 class DiodeSequence(Sequence):
-    def __init__(self, batch_size, test = False):
+    """Sequence of images with depth and mask information from DIODE dataset.
+    Images are randomly grayscaled and random brightness and contrast is 
+    applied.
+    """
+
+    def __init__(self, batch_size, path):
         self.batch_size = batch_size
         self.dataset = []
 
@@ -17,17 +20,11 @@ class DiodeSequence(Sequence):
         self.target_size = [768 // 2, 1024 // 2, 3]
         self.depth_mask_size = [768 // 4, 1024 // 4, 2]
 
-        self.policy = BasicPolicy(
-            color_change_ratio=0.50, mirror_ratio=0.50, 
-            flip_ratio=0.0, add_noise_peak=0, erase_ratio=-1.0
-        )
         self.batch_size = batch_size
         self.shape_rgb = [batch_size] + self.target_size
         self.shape_depth = [batch_size] + [768 // 4, 1024 // 4, 2]
         self.maxDepth = 350.0
         self.minDepth = 0.6
-
-        path = "diode_test" if test else "diode_data"
         
         for root, _, files in os.walk(path):
             for file in files:
@@ -97,8 +94,12 @@ class DiodeSequence(Sequence):
 
         return color, depth
 
-class HELMSequence(Sequence):
-    def __init__(self, batch_size):
+class ImageSequence(Sequence):
+    """Sequence of all files under the given path.
+    No data augmentation is performed. Images are scaled to size of model input.
+    """
+
+    def __init__(self, batch_size, path):
         self.batch_size = batch_size
         self.dataset = []
 
@@ -110,11 +111,9 @@ class HELMSequence(Sequence):
         self.shape_rgb = [batch_size] + self.target_size
         self.shape_depth = [batch_size] + [768 // 4, 1024 // 4, 2]
 
-        path = "helm_test"
-
         for root, _, files in os.walk(path):
             for file in files:
-                if file.endswith(".jpg"):
+                if file.endswith(".jpg") or file.endswith(".png"):
                     self.dataset += [os.path.join(root, file)]
         
         self.size = len(self.dataset)
