@@ -21,4 +21,12 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.4, <3.8',
+    install_requires=[
+        "tensorflow==1.15",
+        "matplotlib",
+        "pillow",
+        "scikit-learn",
+        "scikit-image",
+        "opencv-python",
+    ]
 )
