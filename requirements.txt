@@ -1,5 +1,5 @@
-DenseDepthEstimation
-keras
+tensorflow==1.15
+matplotlib
 pillow
 scikit-learn
 scikit-image

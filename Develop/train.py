@@ -4,7 +4,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '5'
 # Kerasa / TensorFlow
 from loss import depth_loss_function, depth_variance, error_variance
 from utils import display_images
-from model import create_model
+from dense_depth.model import create_model
 from data import DiodeSequence
 
 from tensorflow.keras.optimizers import Adam

@@ -3,7 +3,7 @@ import sys
 from tensorflow.keras import applications
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, InputLayer, Conv2D, Activation, LeakyReLU, Concatenate
-from layers import BilinearUpSampling2D
+from dense_depth.layers import BilinearUpSampling2D
 
 def create_model(existing=''):
     """Create Keras model

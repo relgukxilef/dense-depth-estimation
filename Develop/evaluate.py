@@ -3,7 +3,7 @@ import argparse
 
 # Kerasa / TensorFlow
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '5'
-from model import create_model
+from dense_depth.model import create_model
 from loss import depth_loss_function, depth_variance, error_variance
 from data import DiodeSequence, ImageSequence
 import tensorflow as tf
