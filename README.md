@@ -10,6 +10,10 @@ This project consists of a tool to generate dense depth maps from images, specia
 
 The Develop folder has scripts for training, testing and avaluating the model.
 
+## Installation
+
+Run `pip install .` in the root folder. That's it.
+
 ## Demo
 
 The script `Demo/demo.py` shows how to predict the depth of an individual image.
