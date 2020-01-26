@@ -16,7 +16,7 @@ Run `pip install .` in the root folder. That's it.
 
 ## Demo
 
-The script `Demo/demo.py` shows how to predict the depth of an individual image.
+The script `Demo/demo.py` shows how to predict the depth of an individual image. If it is run outside of the Demo directory it is ncessary to specify the path to the model and the test image with the parameters `--model` and `--input` respectively.
 
 ## Training
 
