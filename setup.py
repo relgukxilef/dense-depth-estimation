@@ -22,7 +22,7 @@ setuptools.setup(
     ],
     python_requires='>=3.4, <3.8',
     install_requires=[
-        "tensorflow==1.15",
+        "tensorflow==2.9.3",
         "matplotlib",
         "pillow",
         "scikit-learn",
